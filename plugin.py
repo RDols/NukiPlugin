@@ -1,7 +1,7 @@
 """
-<plugin key="NukiPlugin" name="Nuki Smart Lock Plugin" author="R.Dols" version="0.0.21">
+<plugin key="NukiPlugin" name="Nuki Smart Lock Plugin" author="R.Dols" version="0.0.22">
     <description>
-        <h2>Nuki Smart Lock 0.0.21</h2><br/>
+        <h2>Nuki Smart Lock 0.0.22</h2><br/>
         <h3>Notes:</h3>
         <ul style="list-style-type:square">
             <li>Still under development</li>
@@ -156,10 +156,15 @@ class NukiPlugin:
         
         self.Locks[lockInfo["nukiId"]] = { "Name":lockInfo["name"], "DoorSensor":255, "State":255, "Battery":255}
         lock = self.Locks[lockInfo["nukiId"]]
+        found = False
         for deviceId in Devices: 
             device = Devices[deviceId]
             if device.DeviceID == str(lockInfo["nukiId"]):
-                return
+                found = True
+                if device.Unit == 1:
+                    lock["dzStatus"] = device
+                if device.Unit == 2:
+                    lock["dzSensor"] = device
 
         newSwitch = {}
         newSwitch['Type'] = 244
