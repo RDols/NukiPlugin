@@ -1,7 +1,7 @@
 """
-<plugin key="NukiPlugin" name="Nuki Smart Lock Plugin" author="R.Dols" version="0.0.20">
+<plugin key="NukiPlugin" name="Nuki Smart Lock Plugin" author="R.Dols" version="0.0.21">
     <description>
-        <h2>Nuki Smart Lock 0.0.20</h2><br/>
+        <h2>Nuki Smart Lock 0.0.21</h2><br/>
         <h3>Notes:</h3>
         <ul style="list-style-type:square">
             <li>Still under development</li>
@@ -49,15 +49,6 @@ class NukiPlugin:
         self.Bridges[0] = { "Ip":Parameters["Address"], "Port":Parameters["Port"], "ApiKey":Parameters["Mode1"] }
         self.ListDevices()
         self.CreateCallbacks()
-
-
-    def FindBridges(self):
-        data = urllib.request.urlopen("https://api.nuki.io/discover/bridges").read().decode('utf-8')
-        response = json.loads(data)
-        if ('bridges' in response):
-            for bridge in response["bridges"]:
-                Domoticz.Log("bridge found : id=" + str(bridge["bridgeId"]) + " ip:" + bridge["ip"] + " port:" + str(bridge["port"]))
-                self.Bridges[bridge["bridgeId"]] = { "ip":bridge["ip"], "port":bridge["port"]}
 
 
     def ListDevices(self):
@@ -165,22 +156,10 @@ class NukiPlugin:
         
         self.Locks[lockInfo["nukiId"]] = { "Name":lockInfo["name"], "DoorSensor":255, "State":255, "Battery":255}
         lock = self.Locks[lockInfo["nukiId"]]
-        found = False
         for deviceId in Devices: 
             device = Devices[deviceId]
             if device.DeviceID == str(lockInfo["nukiId"]):
-                found = True
-                if device.Unit == 1:
-                    lock["dzStatus"] = device
-                if device.Unit == 2:
-                    lock["dzSensor"] = device
-                #if device.Unit == 3:
-                #    lock["dzAction"] = device
-                #if device.Unit == 4:
-                #    lock["dzKeypad"] = device
-
-        if found:
-            return
+                return
 
         newSwitch = {}
         newSwitch['Type'] = 244
@@ -202,20 +181,6 @@ class NukiPlugin:
             newSwitch['Options'] = {"LevelActions": "|||||", "LevelNames": "-|deactivated|door closed|door opened|unknown|calibrating|uncalibrated|removed", "LevelOffHidden": "true", "SelectorStyle": "1"}
             Domoticz.Device(**newSwitch).Create()
             lock["dzSensor"] = Devices[len(Devices)]
-
-        #if "dzAction" not in lock:
-        #    newSwitch['Name'] = lockInfo["name"] + " Action"
-        #    newSwitch['Unit'] = 3
-        #    newSwitch['Options'] = {"LevelActions": "|||||", "LevelNames": "-|unlock|lock|unlatch|lock ‘n’ go|lock ‘n’ go with unlatch", "LevelOffHidden": "true", "SelectorStyle": "1"}
-        #    Domoticz.Device(**newSwitch).Create()
-        #    lock["dzAction"] = Devices[-1]
-
-        #if "dzKeypad" not in lock:
-        #    newSwitch['Name'] = lockInfo["name"] + " Keypad"
-        #    newSwitch['Unit'] = 4
-        #    newSwitch['Options'] = {"LevelActions": "|||||", "LevelNames": "-|deactivated|door closed|door opened|unknown|calibrating|uncalibrated|removed", "LevelOffHidden": "true", "SelectorStyle": "1"}
-        #    Domoticz.Device(**newSwitch).Create()
-        #    lock["dzKeypad"] = Devices[-1]
 
 
     def CreateCallbacks(self):
